@@ -1,6 +1,7 @@
 """Sensor platform for HasWave Namaz Vakitleri."""
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -9,6 +10,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 from .const import (
     DOMAIN,
@@ -101,16 +104,22 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str | None:
         """Return the state of the sensor."""
         if self.coordinator.data is None:
+            _LOGGER.debug(f"Sensor {self._sensor_key}: Coordinator data is None")
             return None
         
         if self._sensor_key == SENSOR_TARIH:
-            return self.coordinator.data.get("tarih")
+            value = self.coordinator.data.get("tarih")
+            _LOGGER.debug(f"Sensor {self._sensor_key}: Tarih = {value}")
+            return value
         
         vakitler = self.coordinator.data.get("vakitler", {})
         if not vakitler:
+            _LOGGER.warning(f"Sensor {self._sensor_key}: Vakitler boş. Data: {self.coordinator.data}")
             return None
         
-        return vakitler.get(self._sensor_key)
+        value = vakitler.get(self._sensor_key)
+        _LOGGER.debug(f"Sensor {self._sensor_key}: Value = {value}, Vakitler keys: {list(vakitler.keys())}")
+        return value
     
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
