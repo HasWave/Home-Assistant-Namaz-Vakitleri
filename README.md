@@ -14,7 +14,6 @@
   <img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.">
 </a>
 
-
 </div>
 
 ---
@@ -67,23 +66,23 @@
 
 Integration otomatik olarak şu sensor'ları oluşturur:
 
-#### `sensor.namaz_imsak`
-İmsak vakti (timestamp formatında)
+#### `sensor.namaz_vakti_imsak`
+İmsak vakti (saat formatında, örn: "06:16")
 
-#### `sensor.namaz_gunes`
-Güneş vakti (timestamp formatında)
+#### `sensor.namaz_vakti_gunes`
+Güneş vakti (saat formatında, örn: "08:03")
 
-#### `sensor.namaz_ogle`
-Öğle vakti (timestamp formatında)
+#### `sensor.namaz_vakti_ogle`
+Öğle vakti (saat formatında, örn: "12:51")
 
-#### `sensor.namaz_ikindi`
-İkindi vakti (timestamp formatında)
+#### `sensor.namaz_vakti_ikindi`
+İkindi vakti (saat formatında, örn: "15:20")
 
-#### `sensor.namaz_aksam`
-Akşam vakti (timestamp formatında)
+#### `sensor.namaz_vakti_aksam`
+Akşam vakti (saat formatında, örn: "17:39")
 
-#### `sensor.namaz_yatsi`
-Yatsı vakti (timestamp formatında)
+#### `sensor.namaz_vakti_yatsi`
+Yatsı vakti (saat formatında, örn: "19:10")
 
 #### `sensor.namaz_imsak_minutes`
 İmsak vakti (dakika cinsinden, statistics için)
@@ -120,22 +119,22 @@ Lovelace UI'da kart ekleyin:
 type: entities
 title: Namaz Vakitleri
 entities:
-  - entity: sensor.namaz_imsak
+  - entity: sensor.namaz_vakti_imsak
     name: İmsak
     icon: mdi:weather-night
-  - entity: sensor.namaz_gunes
+  - entity: sensor.namaz_vakti_gunes
     name: Güneş
     icon: mdi:weather-sunny
-  - entity: sensor.namaz_ogle
+  - entity: sensor.namaz_vakti_ogle
     name: Öğle
     icon: mdi:weather-sunny
-  - entity: sensor.namaz_ikindi
+  - entity: sensor.namaz_vakti_ikindi
     name: İkindi
     icon: mdi:weather-sunset
-  - entity: sensor.namaz_aksam
+  - entity: sensor.namaz_vakti_aksam
     name: Akşam
     icon: mdi:weather-sunset-down
-  - entity: sensor.namaz_yatsi
+  - entity: sensor.namaz_vakti_yatsi
     name: Yatsı
     icon: mdi:weather-night
   - entity: sensor.namaz_sonraki_vakit
@@ -152,13 +151,13 @@ automation:
   - alias: "Namaz Vakti Bildirimi"
     trigger:
       - platform: time
-        at: "{{ states('sensor.namaz_ogle') }}"
+        at: "{{ states('sensor.namaz_vakti_ogle') }}"
       - platform: time
-        at: "{{ states('sensor.namaz_ikindi') }}"
+        at: "{{ states('sensor.namaz_vakti_ikindi') }}"
       - platform: time
-        at: "{{ states('sensor.namaz_aksam') }}"
+        at: "{{ states('sensor.namaz_vakti_aksam') }}"
       - platform: time
-        at: "{{ states('sensor.namaz_yatsi') }}"
+        at: "{{ states('sensor.namaz_vakti_yatsi') }}"
     action:
       - service: notify.mobile_app
         data:
@@ -263,5 +262,3 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 ⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
 
 Made with ❤️ by HasWave
-
-
