@@ -131,18 +131,40 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
         try:
             # Tarih formatı: "2025-11-25", "25.11.2025" veya "25 Nov 2025" olabilir
             tarih_obj = None
-            tarih_formats = [
-                "%d %b %Y",      # "25 Nov 2025"
-                "%d.%m.%Y",       # "25.11.2025"
-                "%Y-%m-%d",      # "2025-11-25"
-            ]
             
-            for fmt in tarih_formats:
-                try:
-                    tarih_obj = datetime.strptime(tarih_str, fmt)
-                    break
-                except ValueError:
-                    continue
+            # Önce "25 Nov 2025" formatını manuel olarak parse et
+            if " " in tarih_str and len(tarih_str.split()) == 3:
+                parts = tarih_str.split()
+                if len(parts) == 3:
+                    day_str, month_str, year_str = parts
+                    # Ay isimlerini eşleştir
+                    month_map = {
+                        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+                        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
+                    }
+                    month_num = month_map.get(month_str)
+                    if month_num:
+                        try:
+                            day = int(day_str)
+                            year = int(year_str)
+                            tarih_obj = datetime(year, month_num, day)
+                        except (ValueError, TypeError):
+                            pass
+            
+            # Eğer manuel parse başarısız olduysa, diğer formatları dene
+            if tarih_obj is None:
+                tarih_formats = [
+                    "%d.%m.%Y",       # "25.11.2025"
+                    "%Y-%m-%d",      # "2025-11-25"
+                    "%d %b %Y",      # "25 Nov 2025" (locale bağımlı)
+                ]
+                
+                for fmt in tarih_formats:
+                    try:
+                        tarih_obj = datetime.strptime(tarih_str, fmt)
+                        break
+                    except ValueError:
+                        continue
             
             if tarih_obj is None:
                 raise ValueError(f"Tarih formatı tanınmadı: {tarih_str}")
