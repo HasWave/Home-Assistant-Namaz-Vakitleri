@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Namaz Vakitleri Yapılandırması",
+        "description": "İl ve ilçe bazlı namaz vakitlerini almak için gerekli bilgileri girin.",
+        "data": {
+          "city": "İl",
+          "district": "İlçe (Opsiyonel)",
+          "api_url": "API URL",
+          "update_interval": "Güncelleme Aralığı (saniye)"
+        },
+        "data_description": {
+          "city": "Büyük harf ile il adı (örn: İSTANBUL, ANKARA, İZMİR)",
+          "district": "Büyük harf ile ilçe adı (örn: KADIKÖY, ÇANKAYA, KONAK). Boş bırakılırsa il merkezi için sonuç döner.",
+          "api_url": "API endpoint URL'i (varsayılan: https://api.haswave.com/api/v1/namaz)",
+          "update_interval": "Veri güncelleme aralığı saniye cinsinden (varsayılan: 3600 = 1 saat)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "API'ye bağlanılamadı. Lütfen bilgilerinizi kontrol edin.",
+      "unknown": "Beklenmeyen bir hata oluştu."
+    },
+    "abort": {
+      "already_configured": "Bu entegrasyon zaten yapılandırılmış."
+    }
+  }
+}
+
