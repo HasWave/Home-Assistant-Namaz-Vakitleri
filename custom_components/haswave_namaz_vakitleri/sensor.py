@@ -100,13 +100,16 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return the state of the sensor."""
-        if not self.coordinator.data:
+        if self.coordinator.data is None:
             return None
         
         if self._sensor_key == SENSOR_TARIH:
             return self.coordinator.data.get("tarih")
         
         vakitler = self.coordinator.data.get("vakitler", {})
+        if not vakitler:
+            return None
+        
         return vakitler.get(self._sensor_key)
     
     @property
