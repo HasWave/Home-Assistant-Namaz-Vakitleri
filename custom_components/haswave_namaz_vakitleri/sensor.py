@@ -30,37 +30,31 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         key=SENSOR_IMSAK,
         name="İmsak",
         icon="mdi:weather-night",
-        device_class="timestamp",
     ),
     SENSOR_GUNES: SensorEntityDescription(
         key=SENSOR_GUNES,
         name="Güneş",
         icon="mdi:weather-sunny",
-        device_class="timestamp",
     ),
     SENSOR_OGLE: SensorEntityDescription(
         key=SENSOR_OGLE,
         name="Öğle",
         icon="mdi:weather-sunset-up",
-        device_class="timestamp",
     ),
     SENSOR_IKINDI: SensorEntityDescription(
         key=SENSOR_IKINDI,
         name="İkindi",
         icon="mdi:weather-sunset",
-        device_class="timestamp",
     ),
     SENSOR_AKSAM: SensorEntityDescription(
         key=SENSOR_AKSAM,
         name="Akşam",
         icon="mdi:weather-sunset-down",
-        device_class="timestamp",
     ),
     SENSOR_YATSI: SensorEntityDescription(
         key=SENSOR_YATSI,
         name="Yatsı",
         icon="mdi:weather-night",
-        device_class="timestamp",
     ),
     SENSOR_TARIH: SensorEntityDescription(
         key=SENSOR_TARIH,
@@ -100,11 +94,12 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
         self._hass = hass
         self.entity_description = description
         self._sensor_key = sensor_key
-        self._attr_unique_id = f"{DOMAIN}_{sensor_key}"
+        # Entity ID'yi namaz_vakti_* formatında oluştur
+        self._attr_unique_id = f"namaz_vakti_{sensor_key}"
         self._attr_name = f"Namaz Vakti - {description.name}"
     
     @property
-    def native_value(self) -> datetime | str | None:
+    def native_value(self) -> str | None:
         """Return the state of the sensor."""
         if self.coordinator.data is None:
             _LOGGER.debug(f"Sensor {self._sensor_key}: Coordinator data is None")
@@ -125,87 +120,10 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.warning(f"Sensor {self._sensor_key}: Zaman bulunamadı. Vakitler keys: {list(vakitler.keys())}")
             return None
         
-        # Tarih ve saati birleştirerek datetime oluştur
-        tarih_str = self.coordinator.data.get("tarih", "")
-        if not tarih_str:
-            _LOGGER.warning(f"Sensor {self._sensor_key}: Tarih bulunamadı")
-            return None
-        
-        try:
-            # Tarih formatı: "2025-11-25", "25.11.2025" veya "25 Nov 2025" olabilir
-            tarih_obj = None
-            
-            # Önce "25 Nov 2025" formatını manuel olarak parse et
-            if " " in tarih_str and len(tarih_str.split()) == 3:
-                parts = tarih_str.split()
-                if len(parts) == 3:
-                    day_str, month_str, year_str = parts
-                    # Ay isimlerini eşleştir
-                    month_map = {
-                        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
-                        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
-                    }
-                    month_num = month_map.get(month_str)
-                    if month_num:
-                        try:
-                            day = int(day_str)
-                            year = int(year_str)
-                            tarih_obj = datetime(year, month_num, day)
-                        except (ValueError, TypeError):
-                            pass
-            
-            # Eğer manuel parse başarısız olduysa, diğer formatları dene
-            if tarih_obj is None:
-                tarih_formats = [
-                    "%d.%m.%Y",       # "25.11.2025"
-                    "%Y-%m-%d",      # "2025-11-25"
-                    "%d %b %Y",      # "25 Nov 2025" (locale bağımlı)
-                ]
-                
-                for fmt in tarih_formats:
-                    try:
-                        tarih_obj = datetime.strptime(tarih_str, fmt)
-                        break
-                    except ValueError:
-                        continue
-            
-            if tarih_obj is None:
-                raise ValueError(f"Tarih formatı tanınmadı: {tarih_str}")
-            
-            # Zaman formatı: "06:16" veya "06:16:00" olabilir
-            if len(time_str.split(":")) == 2:
-                # "06:16" formatı
-                saat_obj = datetime.strptime(time_str, "%H:%M").time()
-            else:
-                # "06:16:00" formatı
-                saat_obj = datetime.strptime(time_str, "%H:%M:%S").time()
-            
-            # Tarih ve saati birleştir
-            datetime_obj = datetime.combine(tarih_obj.date(), saat_obj)
-            
-            # Timezone ekle (Home Assistant'ın timezone'ını kullan)
-            try:
-                if self._hass and hasattr(self._hass, 'config'):
-                    timezone_str = self._hass.config.time_zone
-                    timezone = dt_util.get_time_zone(timezone_str)
-                    if timezone:
-                        datetime_obj = datetime_obj.replace(tzinfo=timezone)
-                    else:
-                        # Timezone bulunamazsa UTC kullan
-                        datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
-                else:
-                    # Hass yoksa UTC kullan
-                    datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
-            except Exception as e:
-                _LOGGER.warning(f"Sensor {self._sensor_key}: Timezone eklenirken hata: {e}, UTC kullanılıyor")
-                datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
-            
-            _LOGGER.debug(f"Sensor {self._sensor_key}: {time_str} -> {datetime_obj}")
-            return datetime_obj
-            
-        except ValueError as e:
-            _LOGGER.error(f"Sensor {self._sensor_key}: Zaman parse hatası - Tarih: {tarih_str}, Zaman: {time_str}, Hata: {e}")
-            return None
+        # Sadece saat formatını döndür (örn: "06:16")
+        # Timestamp yerine string olarak gösterilecek
+        _LOGGER.debug(f"Sensor {self._sensor_key}: {time_str}")
+        return time_str
     
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
