@@ -22,10 +22,8 @@
 
 * 🕌 **Namaz Vakitleri** - İl ve ilçe bazlı güncel namaz vakitleri
 * ✅ **Config Flow** - Kolay kurulum ve yapılandırma
-* ⏰ **Sonraki Vakit** - Bir sonraki namaz vaktini ve kalan süreyi gösterir
 * 🔄 **Otomatik Güncelleme** - Belirli aralıklarla otomatik veri güncelleme
-* 📅 **Hicri Tarih** - Hicri takvim bilgisi
-* 📊 **Statistics** - Home Assistant statistics sayfasında görünür
+* 📊 **Attributes** - Her sensor'da şehir, ilçe ve tarih bilgisi
 
 ## 🚀 Hızlı Başlangıç
 
@@ -84,32 +82,7 @@ Akşam vakti (saat formatında, örn: "17:39")
 #### `sensor.namaz_vakti_yatsi`
 Yatsı vakti (saat formatında, örn: "19:10")
 
-#### `sensor.namaz_imsak_minutes`
-İmsak vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_gunes_minutes`
-Güneş vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_ogle_minutes`
-Öğle vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_ikindi_minutes`
-İkindi vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_aksam_minutes`
-Akşam vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_yatsi_minutes`
-Yatsı vakti (dakika cinsinden, statistics için)
-
-#### `sensor.namaz_sonraki_vakit`
-Sonraki namaz vakti (attributes içinde kalan süre bilgisi)
-
-#### `sensor.namaz_sonraki_vakit_kalan_dakika`
-Sonraki namaz vaktine kalan dakika (statistics için)
-
-#### `sensor.namaz_tarih`
-Namaz vakitleri tarihi (attributes içinde şehir, ilçe, hicri tarih)
+**Not:** Tüm sensor'larda `sehir`, `ilce` ve `tarih` bilgileri attributes olarak mevcuttur.
 
 ### Dashboard Kartı
 
@@ -137,9 +110,6 @@ entities:
   - entity: sensor.namaz_vakti_yatsi
     name: Yatsı
     icon: mdi:weather-night
-  - entity: sensor.namaz_sonraki_vakit
-    name: Sonraki Vakit
-    icon: mdi:clock-alert
 ```
 
 ### Otomasyon Örneği
@@ -173,20 +143,25 @@ Sonraki namaz vaktine kalan süreye göre bildirim:
 
 ```yaml
 automation:
-  - alias: "Namaz Vakti Hatırlatıcı"
+  - alias: "Namaz Vakti Bildirimi - Öğle"
     trigger:
-      - platform: time_pattern
-        minutes: "/5"  # Her 5 dakikada bir kontrol et
-    condition:
-      condition: template
-      value_template: "{{ states('sensor.namaz_sonraki_vakit_kalan_dakika') | int <= 10 }}"
+      - platform: time
+        at: "{{ states('sensor.namaz_vakti_ogle') }}"
     action:
       - service: notify.mobile_app
         data:
-          title: "🕌 Namaz Vakti Yaklaşıyor"
-          message: >
-            {{ state_attr('sensor.namaz_sonraki_vakit', 'name') }} vakti
-            {{ states('sensor.namaz_sonraki_vakit_kalan_dakika') }} dakika sonra!
+          title: "🕌 Namaz Vakti"
+          message: "Öğle namazı vakti geldi!"
+  
+  - alias: "Namaz Vakti Bildirimi - İkindi"
+    trigger:
+      - platform: time
+        at: "{{ states('sensor.namaz_vakti_ikindi') }}"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "🕌 Namaz Vakti"
+          message: "İkindi namazı vakti geldi!"
 ```
 
 ## 🔧 Gelişmiş Kullanım
