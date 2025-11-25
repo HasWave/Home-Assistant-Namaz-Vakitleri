@@ -129,13 +129,23 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
             return None
         
         try:
-            # Tarih formatı: "2025-11-25" veya "25.11.2025" olabilir
-            if "." in tarih_str:
-                # "25.11.2025" formatı
-                tarih_obj = datetime.strptime(tarih_str, "%d.%m.%Y")
-            else:
-                # "2025-11-25" formatı
-                tarih_obj = datetime.strptime(tarih_str, "%Y-%m-%d")
+            # Tarih formatı: "2025-11-25", "25.11.2025" veya "25 Nov 2025" olabilir
+            tarih_obj = None
+            tarih_formats = [
+                "%d %b %Y",      # "25 Nov 2025"
+                "%d.%m.%Y",       # "25.11.2025"
+                "%Y-%m-%d",      # "2025-11-25"
+            ]
+            
+            for fmt in tarih_formats:
+                try:
+                    tarih_obj = datetime.strptime(tarih_str, fmt)
+                    break
+                except ValueError:
+                    continue
+            
+            if tarih_obj is None:
+                raise ValueError(f"Tarih formatı tanınmadı: {tarih_str}")
             
             # Zaman formatı: "06:16" veya "06:16:00" olabilir
             if len(time_str.split(":")) == 2:
