@@ -10,7 +10,10 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=HasWave&repository=HACS-Namaz-Vakitleri&category=Integration)
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=HasWave&repository=HACS-Namaz-Vakitleri&category=Integration" target="_blank">
+  <img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.">
+</a>
+
 
 </div>
 
@@ -260,4 +263,5 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 ⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
 
 Made with ❤️ by HasWave
+
 
