@@ -12,5 +12,4 @@ SENSOR_OGLE = "ogle"
 SENSOR_IKINDI = "ikindi"
 SENSOR_AKSAM = "aksam"
 SENSOR_YATSI = "yatsi"
-SENSOR_TARIH = "tarih"
 
