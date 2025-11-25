@@ -22,7 +22,6 @@ from .const import (
     SENSOR_IKINDI,
     SENSOR_AKSAM,
     SENSOR_YATSI,
-    SENSOR_TARIH,
 )
 
 SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
@@ -55,11 +54,6 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         key=SENSOR_YATSI,
         name="Yatsı",
         icon="mdi:weather-night",
-    ),
-    SENSOR_TARIH: SensorEntityDescription(
-        key=SENSOR_TARIH,
-        name="Tarih",
-        icon="mdi:calendar",
     ),
 }
 
@@ -105,11 +99,6 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.debug(f"Sensor {self._sensor_key}: Coordinator data is None")
             return None
         
-        if self._sensor_key == SENSOR_TARIH:
-            value = self.coordinator.data.get("tarih")
-            _LOGGER.debug(f"Sensor {self._sensor_key}: Tarih = {value}")
-            return value
-        
         vakitler = self.coordinator.data.get("vakitler", {})
         if not vakitler:
             _LOGGER.warning(f"Sensor {self._sensor_key}: Vakitler boş. Data: {self.coordinator.data}")
@@ -131,11 +120,12 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
         if not self.coordinator.data:
             return {}
         
-        if self._sensor_key == SENSOR_TARIH:
-            return {
-                "sehir": self.coordinator.data.get("sehir", ""),
-                "ilce": self.coordinator.data.get("ilce", ""),
-            }
+        # Tüm sensor'lara il/ilçe bilgilerini ekle
+        attributes = {
+            "sehir": self.coordinator.data.get("sehir", ""),
+            "ilce": self.coordinator.data.get("ilce", ""),
+            "tarih": self.coordinator.data.get("tarih", ""),
+        }
         
-        return {}
+        return attributes
 
