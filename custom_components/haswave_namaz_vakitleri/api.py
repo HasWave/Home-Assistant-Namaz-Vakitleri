@@ -24,19 +24,22 @@ class HasWaveNamazAPI:
             if self.district:
                 params["ilce"] = self.district
             
+            _LOGGER.debug(f"API isteği: {self.api_url} - Params: {params}")
             response = requests.get(self.api_url, params=params, timeout=15)
             
             if response.status_code == 200:
                 data = response.json()
+                _LOGGER.debug(f"API yanıtı: {data}")
                 if data.get("success"):
+                    _LOGGER.info(f"Namaz vakitleri başarıyla alındı: {data.get('vakitler', {})}")
                     return data
                 else:
                     _LOGGER.error(f"API hatası: {data.get('error', 'Bilinmeyen hata')}")
             else:
-                _LOGGER.error(f"HTTP hatası: {response.status_code}")
+                _LOGGER.error(f"HTTP hatası: {response.status_code} - {response.text}")
                 
         except Exception as e:
-            _LOGGER.error(f"API bağlantı hatası: {e}")
+            _LOGGER.error(f"API bağlantı hatası: {e}", exc_info=True)
         
         return None
 
