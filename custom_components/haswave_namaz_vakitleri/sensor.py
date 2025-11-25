@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
+from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ async def async_setup_entry(
     
     entities = []
     for key, description in SENSOR_DESCRIPTIONS.items():
-        entities.append(HasWaveNamazSensor(coordinator, description, key))
+        entities.append(HasWaveNamazSensor(hass, coordinator, description, key))
     
     async_add_entities(entities)
 
@@ -89,12 +90,14 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
     
     def __init__(
         self,
+        hass: HomeAssistant,
         coordinator: DataUpdateCoordinator,
         description: SensorEntityDescription,
         sensor_key: str,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
+        self._hass = hass
         self.entity_description = description
         self._sensor_key = sensor_key
         self._attr_unique_id = f"{DOMAIN}_{sensor_key}"
@@ -179,6 +182,24 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
             
             # Tarih ve saati birleştir
             datetime_obj = datetime.combine(tarih_obj.date(), saat_obj)
+            
+            # Timezone ekle (Home Assistant'ın timezone'ını kullan)
+            try:
+                if self._hass and hasattr(self._hass, 'config'):
+                    timezone_str = self._hass.config.time_zone
+                    timezone = dt_util.get_time_zone(timezone_str)
+                    if timezone:
+                        datetime_obj = datetime_obj.replace(tzinfo=timezone)
+                    else:
+                        # Timezone bulunamazsa UTC kullan
+                        datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
+                else:
+                    # Hass yoksa UTC kullan
+                    datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
+            except Exception as e:
+                _LOGGER.warning(f"Sensor {self._sensor_key}: Timezone eklenirken hata: {e}, UTC kullanılıyor")
+                datetime_obj = datetime_obj.replace(tzinfo=dt_util.UTC)
+            
             _LOGGER.debug(f"Sensor {self._sensor_key}: {time_str} -> {datetime_obj}")
             return datetime_obj
             
