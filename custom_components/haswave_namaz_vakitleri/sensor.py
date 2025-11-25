@@ -101,7 +101,7 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
         self._attr_name = f"Namaz Vakti - {description.name}"
     
     @property
-    def native_value(self) -> str | None:
+    def native_value(self) -> datetime | str | None:
         """Return the state of the sensor."""
         if self.coordinator.data is None:
             _LOGGER.debug(f"Sensor {self._sensor_key}: Coordinator data is None")
@@ -117,9 +117,42 @@ class HasWaveNamazSensor(CoordinatorEntity, SensorEntity):
             _LOGGER.warning(f"Sensor {self._sensor_key}: Vakitler boş. Data: {self.coordinator.data}")
             return None
         
-        value = vakitler.get(self._sensor_key)
-        _LOGGER.debug(f"Sensor {self._sensor_key}: Value = {value}, Vakitler keys: {list(vakitler.keys())}")
-        return value
+        time_str = vakitler.get(self._sensor_key)
+        if not time_str:
+            _LOGGER.warning(f"Sensor {self._sensor_key}: Zaman bulunamadı. Vakitler keys: {list(vakitler.keys())}")
+            return None
+        
+        # Tarih ve saati birleştirerek datetime oluştur
+        tarih_str = self.coordinator.data.get("tarih", "")
+        if not tarih_str:
+            _LOGGER.warning(f"Sensor {self._sensor_key}: Tarih bulunamadı")
+            return None
+        
+        try:
+            # Tarih formatı: "2025-11-25" veya "25.11.2025" olabilir
+            if "." in tarih_str:
+                # "25.11.2025" formatı
+                tarih_obj = datetime.strptime(tarih_str, "%d.%m.%Y")
+            else:
+                # "2025-11-25" formatı
+                tarih_obj = datetime.strptime(tarih_str, "%Y-%m-%d")
+            
+            # Zaman formatı: "06:16" veya "06:16:00" olabilir
+            if len(time_str.split(":")) == 2:
+                # "06:16" formatı
+                saat_obj = datetime.strptime(time_str, "%H:%M").time()
+            else:
+                # "06:16:00" formatı
+                saat_obj = datetime.strptime(time_str, "%H:%M:%S").time()
+            
+            # Tarih ve saati birleştir
+            datetime_obj = datetime.combine(tarih_obj.date(), saat_obj)
+            _LOGGER.debug(f"Sensor {self._sensor_key}: {time_str} -> {datetime_obj}")
+            return datetime_obj
+            
+        except ValueError as e:
+            _LOGGER.error(f"Sensor {self._sensor_key}: Zaman parse hatası - Tarih: {tarih_str}, Zaman: {time_str}, Hata: {e}")
+            return None
     
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
